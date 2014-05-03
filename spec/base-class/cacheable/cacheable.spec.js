@@ -1,4 +1,4 @@
-describe('BCCache', function() {
+describe('BCCacheable', function() {
   it('adds a cache to the model', function() {
     expect(Post.cached).toEqual({});
   });

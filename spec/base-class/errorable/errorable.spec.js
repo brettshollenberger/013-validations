@@ -1,13 +1,11 @@
-describe("BCErrors", function() {
+describe("BCErrorable", function() {
   var person;
   beforeEach(function() {
-    person = {
+    person = Person.new({
       name: "Troy Barnes",
-    age: 25,
-    email: "troy@greendale.edu"
-    }
-
-    person.$errors = new Errors();
+      age: 25,
+      email: "troy@greendale.edu"
+    });
   });
 
   it("adds errors", function() {
