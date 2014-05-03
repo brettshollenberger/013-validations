@@ -1,12 +1,11 @@
-var Mocks, BaseClass, Post, BCValidations, Validation, Validations, Errors;
+var Mocks, BaseClass, Post, Validatable, Validation, Errors;
 beforeEach(module('BaseClass'));
 beforeEach(module('Mocks'));
-beforeEach(inject(function(_BaseClass_, _Mocks_, _BCValidations_, _BCErrors_) {
-  BaseClass     = _BaseClass_;
-  Mocks         = _Mocks_;
-  Post          = Mocks.Post;
-  BCValidations = _BCValidations_;
-  Validation    = BCValidations.Validation;
-  Validations   = BCValidations.Validations;
-  Errors        = _BCErrors_;
-}));
+beforeEach(inject(["BaseClass", "Mocks", "BCValidatable", "BCValidatable.Validation", "BCErrors", function(_BaseClass_, _Mocks_, _BCValidatable_, _BCValidation_, _BCErrors_) {
+  BaseClass   = _BaseClass_;
+  Mocks       = _Mocks_;
+  Post        = Mocks.Post;
+  Validatable = _BCValidatable_;
+  Validation  = _BCValidation_;
+  Errors      = _BCErrors_;
+}]));

@@ -1,4 +1,4 @@
-describe("BCValidations", function() {
+describe("BCValidatable", function() {
 
   describe("Constructing individual validations", function() {
     var nameRequired;
@@ -26,7 +26,7 @@ describe("BCValidations", function() {
   });
 
   describe("Constructing a set of validations for a model", function() {
-    var validationsDescription, validations, person;
+    var validationsDescription, validatable, person;
     beforeEach(function() {
       person = {
         name: "Troy Barnes",
@@ -50,24 +50,24 @@ describe("BCValidations", function() {
         }
       }
 
-      validations = new Validations(validationsDescription);
+      validatable = new Validatable(validationsDescription);
     });
 
     it("adds validations with no options passed", function() {
-      expect(validations.validations.name[0].field).toEqual("name");
+      expect(validatable.validations.name[0].field).toEqual("name");
     });
 
     it("adds validations with options passed", function() {
-      expect(validations.validations.name[1].field).toEqual("name");
+      expect(validatable.validations.name[1].field).toEqual("name");
     });
 
     it("adds custom error messages", function() {
-      expect(validations.validations.age[0].message).toEqual("is required");
+      expect(validatable.validations.age[0].message).toEqual("is required");
     });
 
     it("adds custom validations", function() {
-      expect(validations.validations.age[1].validate(21)).toEqual(true);
-      expect(validations.validations.age[1].validate(20)).toEqual(false);
+      expect(validatable.validations.age[1].validate(21)).toEqual(true);
+      expect(validatable.validations.age[1].validate(20)).toEqual(false);
     });
 
     it("throws an error if a validation is added with no error message", function() {
@@ -77,56 +77,65 @@ describe("BCValidations", function() {
         }
       }
 
-      expect(function() { new Validations(validationsDescription); }).toThrow();
+      expect(function() { new Validatable(validationsDescription); }).toThrow();
     });
 
     it("describes whether an instance is valid on a particular field", function() {
       person.age = 20;
-      expect(validations.validations.validate(person, "age")).toBe(false);
+      expect(validatable.validations.validate(person, "age")).toBe(false);
       person.age = 21;
-      expect(validations.validations.validate(person, "age")).toBe(true);
+      expect(validatable.validations.validate(person, "age")).toBe(true);
     });
 
     it("describes whether an instance is valid in general", function() {
       person.age = 20;
-      expect(validations.validations.validate(person)).toBe(false);
+      expect(validatable.validations.validate(person)).toBe(false);
       person.age = 21;
-      expect(validations.validations.validate(person)).toBe(true);
+      expect(validatable.validations.validate(person)).toBe(true);
     });
 
     it("adds errors when invalid", function() {
       person.name = "";
       person.age  = 20;
-      validations.validations.validate(person);
+      validatable.validations.validate(person);
       expect(person.$errors.age).toContain("must be at least 21");
       expect(person.$errors.name).toContain("cannot be blank.");
     });
 
     it("does not add errors when valid", function() {
-      validations.validations.validate(person);
+      validatable.validations.validate(person);
       expect(person.$errors.count).toEqual(0);
     });
 
     it("removes previously invalid fields", function() {
       person.name = "";
-      validations.validations.validate(person);
+      validatable.validations.validate(person);
       expect(person.$errors.name).toContain("cannot be blank.");
       person.name = "Troy";
-      validations.validations.validate(person);
+      validatable.validations.validate(person);
       expect(person.$errors.count).toEqual(0);
     });
   });
 
   describe("Integration with Base Class", function() { 
-
     var post;
     beforeEach(function() {
       post = Post.new({});
     });
 
-    it("adds validates the model instance", function() {
+    it("adds validations the model instance", function() {
       post.validate();
       expect(post.$errors.title).toContain("cannot be blank.");
+    });
+
+    it("sets $valid as a property of the instance", function() {
+      expect(post.$valid).toBe(false);
+    });
+
+    it("sets $invalid as a property of the instance", function() {
+      expect(post.$invalid).toBe(true);
+      post.title = "Fun Post";
+      expect(post.$invalid).toBe(false);
     });
   });
 });
