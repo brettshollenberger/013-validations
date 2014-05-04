@@ -400,6 +400,12 @@ describe("BCValidatable", function() {
       expect(person.validate()).toBe(true);
     });
 
+    it("describes whether an instance is valid for a particular field", function() {
+      person.age = 20;
+      expect(person.validate()).toBe(false);
+      expect(person.validate("name")).toBe(true);
+    });
+
     it("throws an error if a validation is added with no error message", function() {
       var validationsDescription = {
         name: {
