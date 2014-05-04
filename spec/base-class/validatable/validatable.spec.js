@@ -1,5 +1,15 @@
 describe("BCValidatable", function() {
 
+  var Validatable, Validation, Validator, registeredValidators;
+  beforeEach(inject(["BCValidatable", "BCValidatable.Validation", 
+  "BCValidatable.Validator", "BCValidatable.validators",
+  function(_BCValidatable_, _BCValidation_, _BCValidator_, validators) {
+    Validatable          = _BCValidatable_;
+    Validation           = _BCValidation_;
+    Validator            = _BCValidator_;
+    registeredValidators = validators;
+  }]));
+
   // # Validators
   // =============
   //
@@ -145,7 +155,7 @@ describe("BCValidatable", function() {
     describe("Basic validators", function() {
       var requiredFn, requiredValidator, configuredRequiredFn;
       beforeEach(function() {
-        requiredFn = function required(value) {
+        requiredFn = function requiredFn(value) {
           return value !== void 0 && !_.isUndefined(value.length) && value.length > 0;
         }
 
@@ -164,27 +174,27 @@ describe("BCValidatable", function() {
         expect(configuredRequiredFn.message).toBe("cannot be blank.");
       });
 
-      it("sets default options", function() { 
-        expect(requiredValidator.options).toEqual(["value", "message", "required"]);
-      });
-
       it("sets the message", function() { 
         expect(requiredValidator.message).toEqual("cannot be blank.");
+      });
+
+      it("registers the validator by its name", function() {
+        expect(registeredValidators.requiredFn).toEqual(requiredValidator);
       });
     });
 
     describe("Validators that receive values", function() {
       var minValidator, configuredMinFn;
       beforeEach(function() { 
-        function min(value) {
-          return value.length >= this.min;
+        function minimum(value) {
+          return value.length >= this.minimum;
         }
 
-        min.message = function() {
-          return "Must be greater than " + this.min;
+        minimum.message = function() {
+          return "Must be greater than " + this.minimum;
         }
 
-        minValidator    = new Validator(min);
+        minValidator    = new Validator(minimum);
         configuredMinFn = minValidator.configure(5);
       });
 
@@ -196,41 +206,41 @@ describe("BCValidatable", function() {
 
     describe("Validators with children", function() {
       var lengthValidator, minValidator, maxValidator, configuredLengthFunctions, configuredMinFn,
-          configuredMaxFn;
+      configuredMaxFn;
 
       beforeEach(function() { 
-        function min(value) {
-          return value.length >= this.min;
+        function minimum(value) {
+          return value.length >= this.minimum;
         }
 
-        min.message = function() {
-          return "Must be more than " + this.min;
+        minimum.message = function() {
+          return "Must be more than " + this.minimum;
         }
 
-        minValidator = new Validator(min);
+        minValidator = new Validator(minimum);
 
-        function max(value) {
-          return value.length <= this.max;
+        function maximum(value) {
+          return value.length <= this.maximum;
         }
 
-        max.message = function() {
-          return "Must be less than " + this.max;
+        maximum.message = function() {
+          return "Must be less than " + this.maximum;
         }
 
-        maxValidator = new Validator(max);
+        maxValidator = new Validator(maximum);
 
-        function length() {}
+        function len() {}
 
-        length.message = "is not the correct length.";
+        len.message = "is not the correct length.";
 
-        length.options = {
-          min: minValidator,
-          max: maxValidator
+        len.options = {
+          minimum: minValidator,
+          maximum: maxValidator
         }
 
-        lengthValidator           = new Validator(length);
+        lengthValidator           = new Validator(len);
 
-        configuredLengthFunctions = lengthValidator.configure({min: 5, max: 10});
+        configuredLengthFunctions = lengthValidator.configure({minimum: 5, maximum: 10});
         configuredMinFn           = configuredLengthFunctions[0];
         configuredMaxFn           = configuredLengthFunctions[1];
       });
@@ -247,13 +257,13 @@ describe("BCValidatable", function() {
 
       it("uses configuration options to override the default message", function() {
         var lengthConfiguration = {
-          min: {value: 5, message: "Must be longer than that."},
-          max: {value: 10, message: function() { return "I just like the number " + this.max; } }
+          minimum: {value: 5, message: "Must be longer than that."},
+        maximum: {value: 10, message: function() { return "I just like the number " + this.maximum; } }
         };
 
         var configuredLengthFunctions = lengthValidator.configure(lengthConfiguration),
-            configuredMinFn           = configuredLengthFunctions[0],
-            configuredMaxFn           = configuredLengthFunctions[1];
+        configuredMinFn           = configuredLengthFunctions[0],
+        configuredMaxFn           = configuredLengthFunctions[1];
 
         expect(configuredMinFn.message).toBe("Must be longer than that.");
         expect(configuredMaxFn.message).toBe("I just like the number 10");
@@ -274,9 +284,9 @@ describe("BCValidatable", function() {
 
         var validationConfiguration = {
           ignore: /^\$/,
-          message: function() {
-            return "Must be a number. Can include " + String(this.ignore);
-          }
+        message: function() {
+          return "Must be a number. Can include " + String(this.ignore);
+        }
         }
 
         numericalityValidator    = new Validator(numericality);
@@ -303,19 +313,19 @@ describe("BCValidatable", function() {
   // or false.
   //
   // They also expose the error message of the validation function.
-  ddescribe("Validations", function() {
+  describe("Validations", function() {
     describe("Constructing individual validations", function() {
       var minValidator, configuredMinFn, MinValidation;
       beforeEach(function() {
-        function min(value) {
-          return value.length >= this.min;
+        function minimum(value) {
+          return value.length >= this.minimum;
         }
 
-        min.message = function() {
-          return "Must be greater than " + this.min;
+        minimum.message = function() {
+          return "Must be greater than " + this.minimum;
         }
 
-        minValidator    = new Validator(min);
+        minValidator    = new Validator(minimum);
         configuredMinFn = minValidator.configure(5);
         MinValidation   = new Validation("name", configuredMinFn);
       });
@@ -336,8 +346,7 @@ describe("BCValidatable", function() {
     });
   });
 
-
-  describe("Constructing a set of validations for a model", function() {
+  describe("Validatable", function() {
     var person;
     beforeEach(function() {
       Person.validates({
@@ -350,23 +359,20 @@ describe("BCValidatable", function() {
         },
         age: {
           required: {message: "is required"},
-          legal: {validator: function(age) { return function(age) { return Number(age) >= 21; }},
-                  message: "must be at least 21"}
+          legal: {validator: function(age) { return Number(age) >= 21; },
+                  message: "must be at least 21"
+          }
         }
       });
 
       person = Person.new({
         name: "Troy Barnes",
-        age: 25
+             age: 25
       });
     });
 
-    it("adds validations with no options passed", function() {
+    it("adds validations", function() {
       expect(Person.validations.name[0].field).toEqual("name");
-    });
-
-    it("adds validations with options passed", function() {
-      expect(Person.validations.name[1].field).toEqual("name");
     });
 
     it("passes options to validation messages if necessary", function() {
@@ -383,6 +389,7 @@ describe("BCValidatable", function() {
       person.age = 21;
       expect(person.validate("age")).toEqual(true);
       person.age = 20;
+      person.validate();
       expect(person.validate("age")).toEqual(false);
     });
 
@@ -390,7 +397,6 @@ describe("BCValidatable", function() {
       person.age = 20;
       expect(person.validate()).toBe(false);
       person.age = 21;
-      console.log(person.$errors);
       expect(person.validate()).toBe(true);
     });
 
@@ -421,7 +427,7 @@ describe("BCValidatable", function() {
       person.name = "";
       person.validate();
       expect(person.$errors.name).toContain("cannot be blank.");
-      person.name = "Troy";
+      person.name = "Troy Barnes";
       person.validate();
       expect(person.$errors.count).toEqual(0);
     });
